@@ -1,12 +1,19 @@
 from fastapi import FastAPI, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from database import get_db
+from database import Base, get_db
+from sqlalchemy import create_engine
 from models import Categoria, Produto
+
+engine = create_engine("sqlite:///./loja.db")
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request, db: Session = Depends(get_db)):
     categorias = db.query(Categoria).all()
@@ -40,3 +47,5 @@ def delete_produto(produto_id: int, db: Session = Depends(get_db)):
         db.delete(produto)
         db.commit()
     return RedirectResponse(url="/", status_code=303)
+
+
